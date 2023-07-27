@@ -27,7 +27,8 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
         const lectureCollection = client.db("learnerCafeDB").collection("lectureSlide");
-
+        const userCollection = client.db("learnerCafeDB").collection("users");
+        
         app.get('/alllecture', async (req, res) => {
             const cursor = lectureCollection.find();
             const result = await cursor.toArray();
@@ -52,6 +53,11 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result);
         })
+        // user api
+        app.get('/users', async (req, res) => {
+            const result = await userCollection.find().toArray();
+            res.send(result);
+        })
         // post lecture
         app.post('/alllecture', async (req, res) => {
             const newLecture = req.body;
@@ -59,6 +65,18 @@ async function run() {
             res.send(result);
             console.log(newLecture);
         })
+        app.post('/users', async(req, res) =>{
+            const user =  req.body;
+            console.log(user);
+            const query = {email: user.email}
+            const existingUser = await userCollection.findOne(query);
+            console.log('Existing USER: ',existingUser);
+            if(existingUser){
+              return res.send({message: 'user already exist'})
+            }
+            const result = await userCollection.insertOne(user);
+            res.send(result);
+          })
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
