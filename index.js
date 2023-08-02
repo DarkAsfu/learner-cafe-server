@@ -28,7 +28,7 @@ async function run() {
         await client.connect();
         const lectureCollection = client.db("learnerCafeDB").collection("lectureSlide");
         const userCollection = client.db("learnerCafeDB").collection("users");
-        
+
         app.get('/alllecture', async (req, res) => {
             const cursor = lectureCollection.find();
             const result = await cursor.toArray();
@@ -65,17 +65,38 @@ async function run() {
             res.send(result);
             console.log(newLecture);
         })
-        app.post('/users', async(req, res) =>{
-            const user =  req.body;
+        app.post('/users', async (req, res) => {
+            const user = req.body;
             console.log(user);
-            const query = {email: user.email}
+            const query = { email: user.email }
             const existingUser = await userCollection.findOne(query);
-            console.log('Existing USER: ',existingUser);
-            if(existingUser){
-              return res.send({message: 'user already exist'})
+            console.log('Existing USER: ', existingUser);
+            if (existingUser) {
+                return res.send({ message: 'user already exist' })
             }
             const result = await userCollection.insertOne(user);
             res.send(result);
+        })
+        // make admin
+        app.patch('/users/admin/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    role: 'admin'
+                },
+            };
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+        // get admin   ---- http://localhost:5000/users/admin/ashraful.islam0871@gmail.com
+        app.get('/users/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email }
+            const user = await userCollection.findOne(query);
+            console.log(user);
+            const result = { admin: user?.role === 'admin' }
+            res.send(result)
         })
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
