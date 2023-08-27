@@ -25,7 +25,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
         const lectureCollection = client.db("learnerCafeDB").collection("lectureSlide");
         const userCollection = client.db("learnerCafeDB").collection("users");
         const bookMarkCollection = client.db("learnerCafeDB").collection("bookmarks");
@@ -59,14 +59,21 @@ async function run() {
                 res.status(500).send("Internal Server Error");
             }
         });
-        // categorywise api for lecture
-        app.get('/lectures/:category', async (req, res) => {
-            // console.log(req.params.category);
-            if (req.params.category === 'CSE' || req.params.category === 'EEE' || req.params.category === 'MATH') {
-                const result = await lectureCollection.find({ category: req.params.category }).toArray();
-                return res.send(result)
+        // categorywise api for lecture http://localhost:5000/lectures/category/EEE
+        app.get('/lectures/category/:category', async (req, res) => {
+            try {
+                const category = (req.params.category);
+                if (category === 'CSE' || category === 'EEE' || category === 'MATH') {
+                    const result = await lectureCollection.find({ category }).toArray();
+                    res.status(200).json(result);
+                } else {
+                    res.status(404).send("Invalid category");
+                }
+            } catch (error) {
+                console.error("Error fetching lectures by category:", error);
+                res.status(500).send("Internal Server Error");
             }
-        })
+        });
         // get api with email  http://localhost:5000/myLectures?email=xyz@abc.com
         app.get('/myLectures', async (req, res) => {
             console.log(req.query);
