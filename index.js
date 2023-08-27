@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors')
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 const app = express();
 
@@ -28,22 +28,47 @@ async function run() {
         await client.connect();
         const lectureCollection = client.db("learnerCafeDB").collection("lectureSlide");
         const userCollection = client.db("learnerCafeDB").collection("users");
+        const bookMarkCollection = client.db("learnerCafeDB").collection("bookmarks");
 
-        app.get('/alllecture', async (req, res) => {
-            const cursor = lectureCollection.find();
-            const result = await cursor.toArray();
-            res.send(result);
+        // get all lecture
+        app.get('/lectures', async (req, res) => {
+            try {
+                const cursor = lectureCollection.find();
+                const result = await cursor.toArray();
+                res.status(200).json(result); // Sending the result as JSON response
+            } catch (error) {
+                console.error("Error fetching lectures:", error);
+                res.status(500).send("Internal Server Error");
+            }
         })
-        // categorywise api
-        app.get('/alllecture/:category', async (req, res) => {
+
+        // get single lecture
+        app.get('/lectures/:id', async (req, res) => {
+            try {
+                const id = req.params.id;
+                const query = { _id: new ObjectId(id) };
+                const result = await lectureCollection.findOne(query);
+
+                if (result) {
+                    res.status(200).json(result); // Sending the lecture as JSON response
+                } else {
+                    res.status(404).send("Lecture not found");
+                }
+            } catch (error) {
+                console.error("Error fetching lecture:", error);
+                res.status(500).send("Internal Server Error");
+            }
+        });
+        // categorywise api for lecture
+        app.get('/lectures/:category', async (req, res) => {
             // console.log(req.params.category);
             if (req.params.category === 'CSE' || req.params.category === 'EEE' || req.params.category === 'MATH') {
                 const result = await lectureCollection.find({ category: req.params.category }).toArray();
                 return res.send(result)
             }
         })
-        // get api with email  http://localhost:5000/myLecture?email=xyz@abc.com
-        app.get('/myLecture', async (req, res) => {
+        // get api with email  http://localhost:5000/myLectures?email=xyz@abc.com
+        app.get('/myLectures', async (req, res) => {
             console.log(req.query);
             let query = {};
             if (req.query?.email) {
@@ -53,18 +78,26 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result);
         })
-        // user api
-        app.get('/users', async (req, res) => {
-            const result = await userCollection.find().toArray();
-            res.send(result);
-        })
         // post lecture
-        app.post('/alllecture', async (req, res) => {
+        app.post('/lectures', async (req, res) => {
             const newLecture = req.body;
             const result = await lectureCollection.insertOne(newLecture);
             res.send(result);
             console.log(newLecture);
         })
+        // delete lecture
+        app.delete('/lectures/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await lectureCollection.deleteOne(query);
+            res.send(result);
+        })
+        // user api
+        app.get('/users', async (req, res) => {
+            const result = await userCollection.find().toArray();
+            res.send(result);
+        })
+        // post users
         app.post('/users', async (req, res) => {
             const user = req.body;
             console.log(user);
@@ -98,6 +131,37 @@ async function run() {
             const result = { admin: user?.role === 'admin' }
             res.send(result)
         })
+        // bookmark get
+        app.get('/bookmarks', async (req, res) => {
+            const cursor = bookMarkCollection.find();
+            const result = await cursor.toArray();
+            res.status(200).json(result);
+        })
+        // bookmarks get by email
+        app.get('/mybookmarks', async (req, res) => {
+            console.log(req.query);
+            let query = {};
+            if (req.query?.email) {
+                query = { email: req.query.email }
+            }
+            const cursor = bookMarkCollection.find(query);
+            const result = await cursor.toArray();
+            res.status(200).json(result);
+        })
+        // bookmarks post
+        app.post('/bookmarks', async(req, res) => {
+            const mybookmarks = req.body;
+            const result = await bookMarkCollection.insertOne(mybookmarks);
+            res.send(result);
+            console.log(mybookmarks);
+        })
+        // bookmarks delete
+        app.delete('/bookmarks/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await bookMarkCollection.deleteOne(query);
+            res.send(result);
+        })
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
@@ -107,9 +171,6 @@ async function run() {
     }
 }
 run().catch(console.dir);
-
-
-
 
 // default api
 app.get('/', (req, res) => {
