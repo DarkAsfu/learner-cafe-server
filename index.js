@@ -33,7 +33,7 @@ async function run() {
         // get all lecture
         app.get('/lectures', async (req, res) => {
             try {
-                const cursor = lectureCollection.find();
+                const cursor = lectureCollection.find().sort({ _id: -1 });
                 const result = await cursor.toArray();
                 res.status(200).json(result); // Sending the result as JSON response
             } catch (error) {
@@ -63,7 +63,7 @@ async function run() {
         app.get('/lectures/category/:category', async (req, res) => {
             try {
                 const category = (req.params.category);
-                if (category === 'CSE' || category === 'EEE' || category === 'MATH') {
+                if (category === 'slide' || category === 'presentation' || category === 'suggestion' || category === 'lecture' || category === 'labreport') {
                     const result = await lectureCollection.find({ category }).toArray();
                     res.status(200).json(result);
                 } else {
@@ -134,7 +134,7 @@ async function run() {
             const email = req.params.email;
             const query = { email: email }
             const user = await userCollection.findOne(query);
-            console.log(user);
+            // console.log(user);
             const result = { admin: user?.role === 'admin' }
             res.send(result)
         })
@@ -171,7 +171,7 @@ async function run() {
         })
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+        console.log("Pinged your deployment. You successfully connected to MongoDB");
     } finally {
         // Ensures that the client will close when you finish/error
         // await client.close();
