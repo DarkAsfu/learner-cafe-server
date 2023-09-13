@@ -62,21 +62,21 @@ async function run() {
         // search option
         app.get('/documentSearchByTopicName/:text', async (req, res) => {
             try {
-              const searchText = req.params.text;
-              const searchResult = await lectureCollection.find({
-                $or: [
-                  { topicName: { $regex: searchText, $options: 'i' } },
-                  { subName: { $regex: searchText, $options: 'i' } }
-                ]
-              }).toArray();
-          
-              res.json(searchResult);
+                const searchText = req.params.text;
+                const searchResult = await lectureCollection.find({
+                    $or: [
+                        { topicName: { $regex: searchText, $options: 'i' } },
+                        { subName: { $regex: searchText, $options: 'i' } }
+                    ]
+                }).toArray();
+
+                res.json(searchResult);
             } catch (error) {
-              console.error("Error searching for lectures:", error);
-              res.status(500).json({ error: "Internal server error" });
+                console.error("Error searching for lectures:", error);
+                res.status(500).json({ error: "Internal server error" });
             }
-          });
-          
+        });
+
         // categorywise api for lecture http://localhost:5000/lectures/category/EEE
         app.get('/lectures/category/:category', async (req, res) => {
             try {
@@ -101,6 +101,26 @@ async function run() {
             }
             const cursor = lectureCollection.find(query);
             const result = await cursor.toArray();
+            res.send(result);
+        })
+        // update document
+        app.patch('/lectures/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = req.body;
+            console.log(updatedDoc);
+            const document = {
+                $set: {
+                    subName: updatedDoc.subName,
+                    subCode: updatedDoc.subCode,
+                    driveLink: updatedDoc.driveLink,
+                    topicName: updatedDoc.topicName,
+                    category: updatedDoc.category,
+                    description: updatedDoc.description
+                }
+            }
+            const result = await lectureCollection.updateOne(filter, document, options);
             res.send(result);
         })
         // post lecture
@@ -174,7 +194,7 @@ async function run() {
             res.status(200).json(result);
         })
         // bookmarks post
-        app.post('/bookmarks', async(req, res) => {
+        app.post('/bookmarks', async (req, res) => {
             const mybookmarks = req.body;
             const result = await bookMarkCollection.insertOne(mybookmarks);
             res.send(result);
