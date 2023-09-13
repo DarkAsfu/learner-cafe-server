@@ -76,6 +76,22 @@ async function run() {
                 res.status(500).json({ error: "Internal server error" });
             }
         });
+        // subject wise data http://localhost:5000/documentSearchBySubName/algorithm
+        app.get('/documentSearchBySubName/:text', async (req, res) => {
+            try {
+                const searchText = req.params.text;
+                const searchResult = await lectureCollection.find({
+                    $or: [
+                        { subName: { $regex: searchText, $options: 'i' } }
+                    ]
+                }).toArray();
+
+                res.json(searchResult);
+            } catch (error) {
+                console.error("Error searching for lectures:", error);
+                res.status(500).json({ error: "Internal server error" });
+            }
+        });
 
         // categorywise api for lecture http://localhost:5000/lectures/category/EEE
         app.get('/lectures/category/:category', async (req, res) => {
