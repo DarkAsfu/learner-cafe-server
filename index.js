@@ -29,6 +29,7 @@ async function run() {
         const lectureCollection = client.db("learnerCafeDB").collection("lectureSlide");
         const userCollection = client.db("learnerCafeDB").collection("users");
         const bookMarkCollection = client.db("learnerCafeDB").collection("bookmarks");
+        const bookCollection = client.db("learnerCafeDB").collection("books")
 
         // get all lecture
         app.get('/lectures', async (req, res) => {
@@ -40,6 +41,12 @@ async function run() {
                 console.error("Error fetching lectures:", error);
                 res.status(500).send("Internal Server Error");
             }
+        })
+        // get book
+        app.get('/books', async(req, res) => {
+            const cursor = bookCollection.find();
+            const result = await cursor.toArray();
+            res.send(result);
         })
 
         // get single lecture
@@ -98,7 +105,7 @@ async function run() {
             try {
                 const category = (req.params.category);
                 if (category === 'slide' || category === 'presentation' || category === 'suggestion' || category === 'lecture' || category === 'labreport') {
-                    const result = await lectureCollection.find({ category }).toArray();
+                    const result = await lectureCollection.find({ category }).sort({ _id: -1 }).toArray();
                     res.status(200).json(result);
                 } else {
                     res.status(404).send("Invalid category");
@@ -144,7 +151,12 @@ async function run() {
             const newLecture = req.body;
             const result = await lectureCollection.insertOne(newLecture);
             res.send(result);
-            console.log(newLecture);
+        })
+        // book post
+        app.post('/books', async(req, res) => {
+            const book = req.body;
+            const result = await bookCollection.insertOne(book);
+            res.send(result);
         })
         // delete lecture
         app.delete('/lectures/:id', async (req, res) => {
