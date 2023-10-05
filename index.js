@@ -221,7 +221,7 @@ async function run() {
             const result = await cursor.toArray();
             res.status(200).json(result);
         })
-        // bookmarks post
+        // bookmarks post api
         app.post('/bookmarks', async (req, res) => {
             const mybookmarks = req.body;
             const result = await bookMarkCollection.insertOne(mybookmarks);
