@@ -49,7 +49,11 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result);
         })
-
+        app.get('/queueDoc', async(req, res) => {
+            const cursor = queueDocCollection.find();
+            const result = await cursor.toArray();
+            res.send(result);
+        })
         // get single lecture
         app.get('/lectures/:id', async (req, res) => {
             try {
