@@ -30,6 +30,7 @@ async function run() {
         const userCollection = client.db("learnerCafeDB").collection("users");
         const bookMarkCollection = client.db("learnerCafeDB").collection("bookmarks");
         const bookCollection = client.db("learnerCafeDB").collection("books")
+        const queueDocCollection = client.db("learnerCafeDB").collection("queueDoc")
 
         // get all lecture
         app.get('/lectures', async (req, res) => {
@@ -156,6 +157,11 @@ async function run() {
         app.post('/books', async(req, res) => {
             const book = req.body;
             const result = await bookCollection.insertOne(book);
+            res.send(result);
+        })
+        app.post('/queueDoc', async(req, res) => {
+            const doc = req.body;
+            const result = await queueDocCollection.insertOne(doc);
             res.send(result);
         })
         // delete lecture
