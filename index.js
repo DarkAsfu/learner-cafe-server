@@ -44,12 +44,12 @@ async function run() {
             }
         })
         // get book
-        app.get('/books', async(req, res) => {
+        app.get('/books', async (req, res) => {
             const cursor = bookCollection.find();
             const result = await cursor.toArray();
             res.send(result);
         })
-        app.get('/queueDoc', async(req, res) => {
+        app.get('/queueDoc', async (req, res) => {
             const cursor = queueDocCollection.find();
             const result = await cursor.toArray();
             res.send(result);
@@ -158,12 +158,12 @@ async function run() {
             res.send(result);
         })
         // book post
-        app.post('/books', async(req, res) => {
+        app.post('/books', async (req, res) => {
             const book = req.body;
             const result = await bookCollection.insertOne(book);
             res.send(result);
         })
-        app.post('/queueDoc', async(req, res) => {
+        app.post('/queueDoc', async (req, res) => {
             const doc = req.body;
             const result = await queueDocCollection.insertOne(doc);
             res.send(result);
@@ -251,6 +251,43 @@ async function run() {
             const result = await bookMarkCollection.deleteOne(query);
             res.send(result);
         })
+        // Monthly user registration count
+        app.get('/monthlyUserRegistration', async (req, res) => {
+            try {
+                const monthNames = [
+                    'January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'
+                ];
+        
+                const users = await userCollection.find().toArray();
+        
+                // Extract and count monthly registrations
+                const monthlyCounts = users.reduce((acc, user) => {
+                    const registrationDate = new Date(user.date);
+                    const year = registrationDate.getFullYear();
+                    const month = registrationDate.getMonth(); // Months are 0-based in JavaScript
+        
+                    const key = `${year}-${month}`;
+                    acc[key] = (acc[key] || 0) + 1;
+        
+                    return acc;
+                }, {});
+        
+                // Convert the counts to an array of objects with month names
+                const result = Object.entries(monthlyCounts).map(([key, count]) => {
+                    const [year, month] = key.split('-');
+                    return { year: parseInt(year), month: monthNames[parseInt(month)], count };
+                });
+        
+                // Sort the result by year and month
+                result.sort((a, b) => a.year - b.year || monthNames.indexOf(a.month) - monthNames.indexOf(b.month));
+        
+                res.status(200).json(result);
+            } catch (error) {
+                console.error("Error fetching monthly user registration count:", error);
+                res.status(500).send("Internal Server Error");
+            }
+        });
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB");
