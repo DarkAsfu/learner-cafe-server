@@ -288,6 +288,24 @@ async function run() {
                 res.status(500).send("Internal Server Error");
             }
         });
+        // Update user data
+        app.patch('/user/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updatedUserInfo = req.body;
+            console.log(updatedUserInfo);
+            const document = {
+                $set: {
+                    name: updatedUserInfo.name,
+                    github: updatedUserInfo.github,
+                    facebook: updatedUserInfo.facebook,
+                    linkedin: updatedUserInfo.linkedin,
+                }
+            }
+            const result = await userCollection.updateOne(filter, document, options);
+            res.send(result);
+        })
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB");
