@@ -45,7 +45,7 @@ async function run() {
         })
         // get book
         app.get('/books', async (req, res) => {
-            const cursor = bookCollection.find();
+            const cursor = bookCollection.find().sort({_id: -1});
             const result = await cursor.toArray();
             res.send(result);
         })
