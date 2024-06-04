@@ -29,8 +29,9 @@ async function run() {
         const lectureCollection = client.db("learnerCafeDB").collection("lectureSlide");
         const userCollection = client.db("learnerCafeDB").collection("users");
         const bookMarkCollection = client.db("learnerCafeDB").collection("bookmarks");
-        const bookCollection = client.db("learnerCafeDB").collection("books")
-        const queueDocCollection = client.db("learnerCafeDB").collection("queueDoc")
+        const bookCollection = client.db("learnerCafeDB").collection("books");
+        const queueDocCollection = client.db("learnerCafeDB").collection("queueDoc");
+        const blogsCollection = client.db("learnerCafeDB").collection("blogs");
 
         // get all lecture
         app.get('/lectures', async (req, res) => {
@@ -305,7 +306,20 @@ async function run() {
             }
             const result = await userCollection.updateOne(filter, document, options);
             res.send(result);
+        });
+
+        app.post('/blogs', async (req, res) => {
+            const blog = req.body;
+            const result = await blogsCollection.insertOne(blog);
+            res.send(result);
+            console.log(blog);
+        });
+        app.get('/blogs', async (req, res) => {
+            const cursor = blogsCollection.find();
+            const result = await cursor.toArray();
+            res.status(200).json(result);
         })
+
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB");
