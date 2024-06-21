@@ -320,7 +320,22 @@ async function run() {
             const result = await cursor.toArray();
             res.status(200).json(result);
         })
+        app.get('/blogs/:id', async (req, res) => {
+            try {
+                const id = req.params.id;
+                const query = { _id: new ObjectId(id) };
+                const result = await blogsCollection.findOne(query);
 
+                if (result) {
+                    res.status(200).json(result);
+                } else {
+                    res.status(404).send("blog not found");
+                }
+            } catch (error) {
+                console.error("Error fetching blogs:", error);
+                res.status(500).send("Internal Server Error");
+            }
+        });
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB");
