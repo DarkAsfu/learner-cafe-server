@@ -335,7 +335,27 @@ async function run() {
                 console.error("Error fetching blogs:", error);
                 res.status(500).send("Internal Server Error");
             }
-        });
+        });// Update likes for a blog post
+        app.patch('/blogs/:id/like', async (req, res) => {
+            try {
+                const id = req.params.id;
+                const filter = { _id: new ObjectId(id) };
+                const updateDoc = {
+                    $inc: { likes: 1 } // Increment the likes field by 1
+                };
+                const options = { returnDocument: 'after' };
+                const result = await blogsCollection.findOneAndUpdate(filter, updateDoc, options);
+        
+                if (result.value) {
+                    res.status(200).json(result.value); // Sending the updated blog as JSON response
+                } else {
+                    res.status(404).send("Blog not found");
+                }
+            } catch (error) {
+                console.error("Error updating likes:", error);
+                res.status(500).send("Internal Server Error");
+            }
+        });        
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB");
