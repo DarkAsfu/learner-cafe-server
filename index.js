@@ -111,7 +111,7 @@ async function run() {
         app.get('/lectures/category/:category', async (req, res) => {
             try {
                 const category = (req.params.category);
-                if (category === 'slide' || category === 'presentation' || category === 'suggestion' || category === 'lecture' || category === 'labreport') {
+                if (category === 'slide' || category === 'presentation' || category === 'suggestion' || category === 'lecture' || category === 'labreport' || category === 'project') {
                     const result = await lectureCollection.find({ category }).sort({ _id: -1 }).toArray();
                     res.status(200).json(result);
                 } else {
