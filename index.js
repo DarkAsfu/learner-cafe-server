@@ -316,7 +316,7 @@ async function run() {
             console.log(blog);
         });
         app.get('/blogs', async (req, res) => {
-            const cursor = blogsCollection.find();
+            const cursor = blogsCollection.find().sort({ _id: -1 });
             const result = await cursor.toArray();
             res.status(200).json(result);
         })
